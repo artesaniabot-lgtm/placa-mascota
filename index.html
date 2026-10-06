@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ayuda a una mascota</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 30px; background-color: #f8f9fa; color: #333; }
+    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    h2 { color: #d9534f; }
+    p { font-size: 16px; line-height: 1.5; }
+    .btn { background-color: #0275d8; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🐾 ¡Has escaneado la placa de una mascota!</h2>
+    <p id="status">Procesando información y avisando al dueño...</p>
+    <div id="details" style="display:none;">
+      <p><b>Mascota:</b> <span id="petName"></span></p>
+      <p><b>Dueño:</b> <span id="ownerName"></span></p>
+      <a id="callBtn" class="btn" href="#">Llamar al Dueño</a>
+    </div>
+  </div>
+
+  <script>
+    // Pega aquí la URL de tu implementación de Apps Script (la que termina en /exec)
+    var API_URL = "https://script.google.com/macros/s/AKfycby95R7QhQqbWJ8iPe7AzeeA_PrP6LWeLLqD9ZI773IvxPe782JfV0tIhCBQb9wOiz8n/exec";
+
+    var status = document.getElementById("status");
+    var petId = new URLSearchParams(window.location.search).get("id");
+
+    if (!petId) {
+      status.textContent = "Código QR inválido: falta el ID de la mascota.";
+    } else {
+      fetch(API_URL + "?id=" + encodeURIComponent(petId))
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (res.ok && res.data) {
+            status.textContent = "¡Notificación enviada con éxito! Gracias por ayudar.";
+            document.getElementById("petName").textContent = res.data.petName;
+            document.getElementById("ownerName").textContent = res.data.ownerName;
+            document.getElementById("callBtn").href = "tel:" + res.data.phone;
+            document.getElementById("details").style.display = "block";
+          } else {
+            status.textContent = "No se encontró información para esta placa.";
+          }
+        })
+        .catch(function () {
+          status.textContent = "No se pudo cargar la información. Inténtalo de nuevo.";
+        });
+    }
+  </script>
+</body>
+</html>
