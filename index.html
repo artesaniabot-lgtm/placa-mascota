@@ -10,6 +10,7 @@
     h2 { color: #d9534f; }
     p { font-size: 16px; line-height: 1.5; }
     .btn { background-color: #0275d8; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 15px; }
+    .nota { font-size: 13px; color: #777; margin-top: 18px; }
   </style>
 </head>
 <body>
@@ -21,6 +22,7 @@
       <p><b>Dueño:</b> <span id="ownerName"></span></p>
       <a id="callBtn" class="btn" href="#">Llamar al Dueño</a>
     </div>
+    <p class="nota" id="nota">Si el navegador te lo pide, permite la ubicación para que el dueño sepa dónde está su mascota.</p>
   </div>
 
   <script>
@@ -29,10 +31,12 @@
     var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
 
-    if (!petId) {
-      estado.textContent = "Código QR inválido: falta el ID de la mascota.";
-    } else {
-      fetch(API_URL + "?id=" + encodeURIComponent(petId))
+    function notificar(lat, lng) {
+      var url = API_URL + "?id=" + encodeURIComponent(petId);
+      if (lat !== null && lng !== null) {
+        url += "&lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng);
+      }
+      fetch(url)
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.data) {
@@ -48,6 +52,18 @@
         .catch(function () {
           estado.textContent = "No se pudo cargar la información. Inténtalo de nuevo.";
         });
+    }
+
+    if (!petId) {
+      estado.textContent = "Código QR inválido: falta el ID de la mascota.";
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) { notificar(pos.coords.latitude, pos.coords.longitude); },
+        function () { notificar(null, null); },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      notificar(null, null);
     }
   </script>
 </body>
