@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ayuda a una mascota</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 30px; background-color: #f8f9fa; color: #333; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 30px 15px; background-color: #f8f9fa; color: #333; }
     .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
     h2 { color: #d9534f; }
-    p { font-size: 16px; line-height: 1.5; }
-    .btn { background-color: #0275d8; color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 15px; }
+    p { font-size: 16px; line-height: 1.5; margin: 8px 0; }
+    .btn { color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: block; margin-top: 12px; }
+    .btn-call { background-color: #0275d8; }
+    .btn-wa { background-color: #25D366; }
     .nota { font-size: 13px; color: #777; margin-top: 18px; }
+    .datos { text-align: left; margin-top: 15px; }
   </style>
 </head>
 <body>
@@ -18,11 +21,18 @@
     <h2>🐾 ¡Has escaneado la placa de una mascota!</h2>
     <p id="estado">Procesando información y avisando al dueño...</p>
     <div id="details" style="display:none;">
-      <p><b>Mascota:</b> <span id="petName"></span></p>
-      <p><b>Dueño:</b> <span id="ownerName"></span></p>
-      <a id="callBtn" class="btn" href="#">Llamar al Dueño</a>
+      <div class="datos">
+        <p><b>Mascota:</b> <span id="petName"></span></p>
+        <p><b>Raza:</b> <span id="raza"></span></p>
+        <p><b>Sexo:</b> <span id="sexo"></span></p>
+        <p><b>Edad:</b> <span id="edad"></span></p>
+        <p><b>Dueño / Tutor:</b> <span id="ownerName"></span></p>
+        <p><b>Observaciones:</b> <span id="observaciones"></span></p>
+      </div>
+      <a id="callBtn" class="btn btn-call" href="#">📞 Llamar al Dueño</a>
+      <a id="waBtn" class="btn btn-wa" href="#" target="_blank" rel="noopener">💬 Escribir por WhatsApp</a>
     </div>
-    <p class="nota" id="nota">Si el navegador te lo pide, permite la ubicación para que el dueño sepa dónde está su mascota.</p>
+    <p class="nota">Si el navegador te lo pide, permite la ubicación para que el dueño sepa dónde está su mascota.</p>
   </div>
 
   <script>
@@ -30,6 +40,22 @@
 
     var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
+
+    function mostrar(d) {
+      document.getElementById("petName").textContent = d.petName;
+      document.getElementById("raza").textContent = d.raza || "No indicada";
+      document.getElementById("sexo").textContent = d.sexo || "No indicado";
+      document.getElementById("edad").textContent = d.edad || "No indicada";
+      document.getElementById("ownerName").textContent = d.ownerName;
+      document.getElementById("observaciones").textContent = d.observaciones || "Ninguna";
+      document.getElementById("callBtn").href = "tel:+" + d.phone;
+
+      var msg = "Hola, escaneé la placa de " + d.petName + " y quiero ayudar.";
+      document.getElementById("waBtn").href =
+        "https://wa.me/" + d.phone + "?text=" + encodeURIComponent(msg);
+
+      document.getElementById("details").style.display = "block";
+    }
 
     function notificar(lat, lng) {
       var url = API_URL + "?id=" + encodeURIComponent(petId);
@@ -41,10 +67,7 @@
         .then(function (res) {
           if (res.ok && res.data) {
             estado.textContent = "¡Notificación enviada con éxito! Gracias por ayudar.";
-            document.getElementById("petName").textContent = res.data.petName;
-            document.getElementById("ownerName").textContent = res.data.ownerName;
-            document.getElementById("callBtn").href = "tel:" + res.data.phone;
-            document.getElementById("details").style.display = "block";
+            mostrar(res.data);
           } else {
             estado.textContent = "No se encontró información para esta placa.";
           }
