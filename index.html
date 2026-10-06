@@ -18,7 +18,7 @@
 </head>
 <body>
   <div class="card">
-    <h2>🐾 ¡Has escaneado la placa de una mascota!</h2>
+        <h2 id="titulo">🐾 ¡Has escaneado la placa de una mascota!</h2>
     <p id="estado">Procesando información y avisando al dueño...</p>
     <div id="details" style="display:none;">
       <div class="datos">
@@ -43,6 +43,7 @@
 
     function mostrar(d) {
       document.getElementById("petName").textContent = d.petName;
+      document.getElementById("titulo").textContent = "🐾 ¡Has escaneado la placa de " + d.petName + "!";
       document.getElementById("raza").textContent = d.raza || "No indicada";
       document.getElementById("sexo").textContent = d.sexo || "No indicado";
       document.getElementById("edad").textContent = d.edad || "No indicada";
