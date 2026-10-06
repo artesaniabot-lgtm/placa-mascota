@@ -15,7 +15,7 @@
 <body>
   <div class="card">
     <h2>🐾 ¡Has escaneado la placa de una mascota!</h2>
-    <p id="status">Procesando información y avisando al dueño...</p>
+    <p id="estado">Procesando información y avisando al dueño...</p>
     <div id="details" style="display:none;">
       <p><b>Mascota:</b> <span id="petName"></span></p>
       <p><b>Dueño:</b> <span id="ownerName"></span></p>
@@ -24,30 +24,29 @@
   </div>
 
   <script>
-    // Pega aquí la URL de tu implementación de Apps Script (la que termina en /exec)
     var API_URL = "https://script.google.com/macros/s/AKfycby95R7QhQqbWJ8iPe7AzeeA_PrP6LWeLLqD9ZI773IvxPe782JfV0tIhCBQb9wOiz8n/exec";
 
-    var status = document.getElementById("status");
+    var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
 
     if (!petId) {
-      status.textContent = "Código QR inválido: falta el ID de la mascota.";
+      estado.textContent = "Código QR inválido: falta el ID de la mascota.";
     } else {
       fetch(API_URL + "?id=" + encodeURIComponent(petId))
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.data) {
-            status.textContent = "¡Notificación enviada con éxito! Gracias por ayudar.";
+            estado.textContent = "¡Notificación enviada con éxito! Gracias por ayudar.";
             document.getElementById("petName").textContent = res.data.petName;
             document.getElementById("ownerName").textContent = res.data.ownerName;
             document.getElementById("callBtn").href = "tel:" + res.data.phone;
             document.getElementById("details").style.display = "block";
           } else {
-            status.textContent = "No se encontró información para esta placa.";
+            estado.textContent = "No se encontró información para esta placa.";
           }
         })
         .catch(function () {
-          status.textContent = "No se pudo cargar la información. Inténtalo de nuevo.";
+          estado.textContent = "No se pudo cargar la información. Inténtalo de nuevo.";
         });
     }
   </script>
