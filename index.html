@@ -5,35 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ayuda a una mascota</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 30px 15px; background-color: #f8f9fa; color: #333; }
-    .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-    h2 { color: #d9534f; }
-    p { font-size: 16px; line-height: 1.5; margin: 8px 0; }
-    .foto { display: none; width: 100%; max-height: 280px; object-fit: cover; border-radius: 10px; margin: 10px 0 5px; }
-    .btn { color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: block; margin-top: 12px; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px 12px; background-color: #f8f9fa; color: #333; margin: 0; }
+    .card { background: white; padding: 22px 18px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 420px; margin: 0 auto; }
+    h2 { color: #d9534f; font-size: 19px; line-height: 1.3; margin: 0 0 12px; }
+
+    .estado { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: #eef1f4; color: #555; margin-bottom: 14px; }
+    .estado.ok { background: #e6f6ea; color: #1e7b34; }
+    .estado.error { background: #fdeaea; color: #b02a2a; }
+
+    .foto { display: none; width: 140px; height: 140px; object-fit: cover; border-radius: 50%; border: 4px solid #d9534f; margin: 4px auto 8px; }
+    .nombre { font-size: 26px; margin: 4px 0 14px; color: #222; word-break: break-word; }
+
+    .btn { color: white; padding: 14px 20px; border-radius: 8px; font-size: 17px; font-weight: bold; text-decoration: none; display: block; margin-top: 10px; }
     .btn-call { background-color: #0275d8; }
     .btn-wa { background-color: #25D366; }
-    .nota { font-size: 13px; color: #777; margin-top: 18px; }
-    .datos { text-align: left; margin-top: 15px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; text-align: left; }
+    .item { background: #f4f6f8; border-radius: 10px; padding: 10px 12px; }
+    .item .etq { font-size: 12px; color: #777; display: block; margin-bottom: 3px; }
+    .item .val { font-size: 16px; font-weight: bold; color: #222; word-break: break-word; }
+
+    .obs { margin-top: 12px; border-radius: 10px; padding: 12px 14px; text-align: left; background: #f4f6f8; }
+    .obs .etq { font-size: 12px; color: #777; display: block; margin-bottom: 3px; }
+    .obs .val { font-size: 16px; color: #555; word-break: break-word; }
+    .obs.alerta { background: #fff4cc; border: 1px solid #f0c33c; }
+    .obs.alerta .etq { color: #8a6a00; font-weight: bold; }
+    .obs.alerta .val { color: #3d3000; font-weight: bold; }
+
+    .nota { font-size: 12px; color: #888; margin-top: 18px; }
   </style>
 </head>
 <body>
   <div class="card">
     <h2 id="titulo">🐾 ¡Has escaneado la placa de una mascota!</h2>
-    <img id="foto" class="foto" alt="">
-    <p id="estado">Procesando información y avisando al dueño...</p>
+    <div id="estado" class="estado">Procesando información y avisando al dueño...</div>
+
     <div id="details" style="display:none;">
-      <div class="datos">
-        <p><b>Mascota:</b> <span id="petName"></span></p>
-        <p><b>Raza:</b> <span id="raza"></span></p>
-        <p><b>Sexo:</b> <span id="sexo"></span></p>
-        <p><b>Edad:</b> <span id="edad"></span></p>
-        <p><b>Dueño / Tutor:</b> <span id="ownerName"></span></p>
-        <p><b>Observaciones:</b> <span id="observaciones"></span></p>
-      </div>
+      <img id="foto" class="foto" alt="">
+      <h1 id="nombre" class="nombre"></h1>
+
       <a id="callBtn" class="btn btn-call" href="#">📞 Llamar al Dueño</a>
       <a id="waBtn" class="btn btn-wa" href="#" target="_blank" rel="noopener">💬 Escribir por WhatsApp</a>
+
+      <div class="grid">
+        <div class="item"><span class="etq">🐾 Raza</span><span class="val" id="raza"></span></div>
+        <div class="item"><span class="etq">🎂 Edad</span><span class="val" id="edad"></span></div>
+        <div class="item"><span class="etq" id="sexoEtq">🐾 Sexo</span><span class="val" id="sexo"></span></div>
+        <div class="item"><span class="etq">👤 Dueño / Tutor</span><span class="val" id="ownerName"></span></div>
+      </div>
+
+      <div id="obsBox" class="obs">
+        <span class="etq" id="obsEtq">📝 Observaciones</span>
+        <span class="val" id="observaciones"></span>
+      </div>
     </div>
+
     <p class="nota">Si el navegador te lo pide, permite la ubicación para que el dueño sepa dónde está su mascota.</p>
   </div>
 
@@ -43,6 +70,11 @@
 
     var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
+
+    function setEstado(texto, clase) {
+      estado.textContent = texto;
+      estado.className = "estado" + (clase ? " " + clase : "");
+    }
 
     function mostrarFoto(nombre) {
       var img = document.getElementById("foto");
@@ -63,17 +95,32 @@
       probarSiguiente();
     }
 
+    function emojiSexo(sexo) {
+      var s = (sexo || "").toLowerCase().trim();
+      if (s.indexOf("hembra") === 0 || s === "h") { return "♀️"; }
+      if (s.indexOf("macho") === 0 || s === "m") { return "♂️"; }
+      return "🐾";
+    }
+
     function mostrar(d) {
-      document.getElementById("petName").textContent = d.petName;
       document.getElementById("titulo").textContent = "🐾 ¡Has escaneado la placa de " + d.petName + "!";
+      document.getElementById("nombre").textContent = d.petName;
+
       document.getElementById("raza").textContent = d.raza || "No indicada";
-      document.getElementById("sexo").textContent = d.sexo || "No indicado";
       document.getElementById("edad").textContent = d.edad || "No indicada";
+      document.getElementById("sexo").textContent = d.sexo || "No indicado";
+      document.getElementById("sexoEtq").textContent = emojiSexo(d.sexo) + " Sexo";
       document.getElementById("ownerName").textContent = d.ownerName;
-      document.getElementById("observaciones").textContent = d.observaciones || "Ninguna";
+
+      var obs = (d.observaciones || "").trim();
+      var sinObs = (obs === "" || /^ninguna\.?$/i.test(obs));
+      document.getElementById("observaciones").textContent = sinObs ? "Ninguna" : obs;
+      document.getElementById("obsEtq").textContent = sinObs ? "📝 Observaciones" : "⚠️ Observaciones importantes";
+      document.getElementById("obsBox").className = "obs" + (sinObs ? "" : " alerta");
+
       document.getElementById("callBtn").href = "tel:+" + d.phone;
 
-      var msg = "      var msg = "¡Hola! 🐾 Escaneé la placa de " + d.petName + " y te quiero ayudar. ¿Cómo podemos hacer para que vuelva contigo?";";
+      var msg = "¡Hola! 🐾 Escaneé la placa de " + d.petName + " y quiero ayudar. ¿Cómo podemos hacer para que vuelva contigo?";
       document.getElementById("waBtn").href =
         "https://wa.me/" + d.phone + "?text=" + encodeURIComponent(msg);
 
@@ -90,19 +137,19 @@
         .then(function (r) { return r.json(); })
         .then(function (res) {
           if (res.ok && res.data) {
-            estado.textContent = "¡Notificación enviada con éxito! Gracias por ayudar.";
+            setEstado("✅ ¡Notificación enviada con éxito! Gracias por ayudar.", "ok");
             mostrar(res.data);
           } else {
-            estado.textContent = "No se encontró información para esta placa.";
+            setEstado("No se encontró información para esta placa.", "error");
           }
         })
         .catch(function () {
-          estado.textContent = "No se pudo cargar la información. Inténtalo de nuevo.";
+          setEstado("No se pudo cargar la información. Inténtalo de nuevo.", "error");
         });
     }
 
     if (!petId) {
-      estado.textContent = "Código QR inválido: falta el ID de la mascota.";
+      setEstado("Código QR inválido: falta el ID de la mascota.", "error");
     } else if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (pos) { notificar(pos.coords.latitude, pos.coords.longitude); },
