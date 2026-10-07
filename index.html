@@ -9,6 +9,7 @@
     .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
     h2 { color: #d9534f; }
     p { font-size: 16px; line-height: 1.5; margin: 8px 0; }
+    .foto { display: none; width: 100%; max-height: 280px; object-fit: cover; border-radius: 10px; margin: 10px 0 5px; }
     .btn { color: white; padding: 12px 20px; border-radius: 6px; font-size: 16px; text-decoration: none; display: block; margin-top: 12px; }
     .btn-call { background-color: #0275d8; }
     .btn-wa { background-color: #25D366; }
@@ -18,7 +19,8 @@
 </head>
 <body>
   <div class="card">
-        <h2 id="titulo">🐾 ¡Has escaneado la placa de una mascota!</h2>
+    <h2 id="titulo">🐾 ¡Has escaneado la placa de una mascota!</h2>
+    <img id="foto" class="foto" alt="">
     <p id="estado">Procesando información y avisando al dueño...</p>
     <div id="details" style="display:none;">
       <div class="datos">
@@ -41,6 +43,14 @@
     var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
 
+    function mostrarFoto(nombre) {
+      var img = document.getElementById("foto");
+      img.onload = function () { img.style.display = "block"; };
+      img.onerror = function () { img.style.display = "none"; };
+      img.alt = "Foto de " + nombre;
+      img.src = "fotos/" + encodeURIComponent(petId) + ".jpg";
+    }
+
     function mostrar(d) {
       document.getElementById("petName").textContent = d.petName;
       document.getElementById("titulo").textContent = "🐾 ¡Has escaneado la placa de " + d.petName + "!";
@@ -55,6 +65,7 @@
       document.getElementById("waBtn").href =
         "https://wa.me/" + d.phone + "?text=" + encodeURIComponent(msg);
 
+      mostrarFoto(d.petName);
       document.getElementById("details").style.display = "block";
     }
 
