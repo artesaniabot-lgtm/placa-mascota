@@ -39,16 +39,28 @@
 
   <script>
     var API_URL = "https://script.google.com/macros/s/AKfycby95R7QhQqbWJ8iPe7AzeeA_PrP6LWeLLqD9ZI773IvxPe782JfV0tIhCBQb9wOiz8n/exec";
+    var EXTENSIONES = ["jpg", "jpeg", "png", "JPG", "JPEG", "PNG"];
 
     var estado = document.getElementById("estado");
     var petId = new URLSearchParams(window.location.search).get("id");
 
     function mostrarFoto(nombre) {
       var img = document.getElementById("foto");
+      var intento = 0;
+
+      function probarSiguiente() {
+        if (intento >= EXTENSIONES.length) {
+          img.style.display = "none";
+          return;
+        }
+        img.src = "fotos/" + encodeURIComponent(petId) + "." + EXTENSIONES[intento];
+        intento++;
+      }
+
       img.onload = function () { img.style.display = "block"; };
-      img.onerror = function () { img.style.display = "none"; };
+      img.onerror = probarSiguiente;
       img.alt = "Foto de " + nombre;
-      img.src = "fotos/" + encodeURIComponent(petId) + ".jpg";
+      probarSiguiente();
     }
 
     function mostrar(d) {
