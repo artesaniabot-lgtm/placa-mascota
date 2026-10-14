@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Gestionar mi mascota</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f8f9fa; color: #333; margin: 0; padding: 20px 12px; }
+    .card { background: #fff; max-width: 420px; margin: 0 auto; padding: 22px 18px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { color: #d9534f; font-size: 20px; margin: 0 0 14px; text-align: center; }
+    h3 { font-size: 16px; margin: 0 0 8px; }
+    .msg { font-size: 14px; padding: 10px 12px; border-radius: 8px; background: #eef1f4; color: #555; margin-bottom: 14px; }
+    .msg.ok { background: #e6f6ea; color: #1e7b34; }
+    .msg.error { background: #fdeaea; color: #b02a2a; }
+    section { border-top: 1px solid #eee; padding-top: 16px; margin-top: 16px; }
+    .badge { display: inline-block; font-weight: bold; padding: 8px 14px; border-radius: 20px; font-size: 15px; margin-bottom: 8px; }
+    .badge.normal { background: #e6f6ea; color: #1e7b34; }
+    .badge.perdida { background: #fdeaea; color: #b02a2a; }
+    .ayuda { font-size: 13px; color: #777; margin: 6px 0 12px; line-height: 1.4; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: bold; color: #fff; cursor: pointer; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-rojo { background: #d9534f; }
+    .btn-verde { background: #25a244; }
+    .btn-azul { background: #0275d8; margin-top: 10px; }
+    input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+    .pie { font-size: 12px; color: #888; text-align: center; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="titulo">&#128062; Gestionar mi mascota</h2>
+    <div id="msg" class="msg">Cargando...</div>
+
+    <div id="panel" style="display:none;">
+      <section style="border-top:none; margin-top:0; padding-top:0;">
+        <h3>Estado de la mascota</h3>
+        <span id="badge" class="badge"></span>
+        <p id="ayudaEstado" class="ayuda"></p>
+        <button id="btnEstado" class="btn"></button>
+      </section>
+
+      <section>
+        <h3>Tel&eacute;fono de contacto</h3>
+        <p class="ayuda">Es el n&uacute;mero que ver&aacute; quien escanee la placa. Debe tener WhatsApp.</p>
+        <input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+56 9 1234 5678">
+        <button id="btnTel" class="btn btn-azul">Guardar tel&eacute;fono</button>
+      </section>
+    </div>
+
+    <p class="pie">Este enlace es personal. No lo compartas con nadie.</p>
+  </div>
+
+  <script>
+    var API_URL = "https://script.google.com/macros/s/AKfycby95R7QhQqbWJ8iPe7AzeeA_PrP6LWeLLqD9ZI773IvxPe782JfV0tIhCBQb9wOiz8n/exec";
+
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    var id = params.get("id");
+    var k = params.get("k");
+    var datos = null;
+    var ocupado = false;
+
+    var msg = document.getElementById("msg");
+    var panel = document.getElementById("panel");
+    var btnEstado = document.getElementById("btnEstado");
+    var btnTel = document.getElementById("btnTel");
+    var inputTel = document.getElementById("tel");
+
+    function setMsg(texto, clase) {
+      msg.textContent = texto;
+      msg.className = "msg" + (clase ? " " + clase : "");
+    }
+
+    function llamar(accion, valor) {
+      var url = API_URL + "?accion=" + encodeURIComponent(accion) +
+                "&id=" + encodeURIComponent(id) + "&k=" + encodeURIComponent(k);
+      if (valor !== undefined) { url += "&valor=" + encodeURIComponent(valor); }
+      return fetch(url).then(function (r) { return r.json(); });
+    }
+
+    function bloquear(b) {
+      ocupado = b;
+      btnEstado.disabled = b;
+      btnTel.disabled = b;
+    }
+
+    function pintar(d) {
+      datos = d;
+      document.getElementById("titulo").textContent = "\uD83D\uDC3E Gestionar a " + d.petName;
+
+      var perdida = (d.estado === "Perdida");
+      var badge = document.getElementById("badge");
+      badge.className = "badge " + (perdida ? "perdida" : "normal");
+      badge.textContent = perdida ? "\uD83D\uDEA8 Marcada como PERDIDA" : "\u2705 Estado normal";
+
+      document.getElementById("ayudaEstado").textContent = perdida
+        ? "Cada escaneo de la placa te llega como aviso urgente. Cuando la encuentres, vuelve al estado normal."
+        : "Si " + d.petName + " se pierde, m\u00E1rcala como perdida para que los avisos de escaneo lleguen como urgentes.";
+
+      btnEstado.className = "btn " + (perdida ? "btn-verde" : "btn-rojo");
+      btnEstado.textContent = perdida
+        ? "\u2705 Ya la encontr\u00E9: volver a normal"
+        : "\uD83D\uDEA8 Marcar como perdida";
+
+      inputTel.value = d.telefonoVisible || "";
+      panel.style.display = "block";
+    }
+
+    function manejar(res, textoExito) {
+      bloquear(false);
+      if (res && res.ok) {
+        pintar(res.data);
+        setMsg(textoExito, "ok");
+      } else {
+        setMsg((res && res.mensaje) ? res.mensaje : "No se pudo completar la acci\u00F3n.", "error");
+      }
+    }
+
+    function fallaRed() {
+      bloquear(false);
+      setMsg("No hay conexi\u00F3n o el servicio no respondi\u00F3. Int\u00E9ntalo de nuevo.", "error");
+    }
+
+    btnEstado.onclick = function () {
+      if (ocupado || !datos) { return; }
+      var perdida = (datos.estado === "Perdida");
+      var nuevo = perdida ? "Normal" : "Perdida";
+      var pregunta = perdida
+        ? "\u00BFConfirmas que " + datos.petName + " ya est\u00E1 contigo y vuelve al estado normal?"
+        : "\u00BFConfirmas marcar a " + datos.petName + " como PERDIDA?";
+      if (!confirm(pregunta)) { return; }
+
+      bloquear(true);
+      setMsg("Guardando...", "");
+      llamar("estado", nuevo)
+        .then(function (res) {
+          manejar(res, perdida
+            ? "Listo. " + datos.petName + " volvi\u00F3 al estado normal. Te enviamos un correo de confirmaci\u00F3n."
+            : "Listo. " + datos.petName + " qued\u00F3 marcada como perdida. Te enviamos un correo de confirmaci\u00F3n.");
+        })
+        .catch(fallaRed);
+    };
+
+    btnTel.onclick = function () {
+      if (ocupado || !datos) { return; }
+      var nuevo = inputTel.value.trim();
+      if (!nuevo) { setMsg("Escribe un tel\u00E9fono.", "error"); return; }
+
+      var soloDigitos = nuevo.replace(/[^0-9]/g, "");
+      if (soloDigitos === String(datos.telefono)) {
+        setMsg("Ese ya es el tel\u00E9fono guardado. No hay cambios.", "");
+        return;
+      }
+      if (!confirm("\u00BFCambiar el tel\u00E9fono de contacto a " + nuevo + "?")) { return; }
+
+      bloquear(true);
+      setMsg("Guardando...", "");
+      llamar("telefono", nuevo)
+        .then(function (res) {
+          manejar(res, "Listo. El tel\u00E9fono se actualiz\u00F3. Te enviamos un correo de confirmaci\u00F3n.");
+        })
+        .catch(fallaRed);
+    };
+
+    // Inicio
+    if (!id || !k) {
+      setMsg("El enlace est\u00E1 incompleto. Usa el enlace que recibiste por correo.", "error");
+    } else {
+      llamar("datos")
+        .then(function (res) {
+          if (res && res.ok) {
+            pintar(res.data);
+            setMsg("Aqu\u00ED puedes cambiar el estado y el tel\u00E9fono de contacto.", "");
+          } else {
+            setMsg((res && res.mensaje) ? res.mensaje : "El enlace no es v\u00E1lido.", "error");
+          }
+        })
+        .catch(fallaRed);
+    }
+  </script>
+</body>
+</html>
