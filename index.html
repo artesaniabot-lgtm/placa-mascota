@@ -14,6 +14,10 @@
     .estado.ok { background: #e6f6ea; color: #1e7b34; }
     .estado.error { background: #fdeaea; color: #b02a2a; }
 
+    .alerta-perdida { display: none; background: #d9534f; color: #fff; border-radius: 12px; padding: 16px 14px; margin: 0 0 16px; text-align: center; box-shadow: 0 3px 8px rgba(217,83,79,0.45); }
+    .alerta-perdida .al-titulo { font-size: 20px; font-weight: bold; margin: 0 0 6px; line-height: 1.25; }
+    .alerta-perdida .al-texto { font-size: 15px; margin: 0; line-height: 1.4; }
+
     .foto { display: none; width: 140px; height: 140px; object-fit: cover; border-radius: 50%; border: 4px solid #d9534f; margin: 4px auto 8px; }
     .nombre { font-size: 26px; margin: 4px 0 14px; color: #222; word-break: break-word; }
 
@@ -42,6 +46,11 @@
     <div id="estado" class="estado">Procesando información y avisando al dueño...</div>
 
     <div id="details" style="display:none;">
+      <div id="alertaPerdida" class="alerta-perdida">
+        <p class="al-titulo">🚨 ¡Mi familia me está buscando!</p>
+        <p class="al-texto">Por favor, contáctala lo antes posible. Usa los botones de abajo.</p>
+      </div>
+
       <img id="foto" class="foto" alt="">
       <h1 id="nombre" class="nombre"></h1>
 
@@ -103,8 +112,11 @@
     }
 
     function mostrar(d) {
+      var perdida = (d.perdida === true);
+
       document.getElementById("titulo").textContent = "🐾 ¡Has escaneado la placa de " + d.petName + "!";
       document.getElementById("nombre").textContent = d.petName;
+      document.getElementById("alertaPerdida").style.display = perdida ? "block" : "none";
 
       document.getElementById("raza").textContent = d.raza || "No indicada";
       document.getElementById("edad").textContent = d.edad || "No indicada";
@@ -120,7 +132,9 @@
 
       document.getElementById("callBtn").href = "tel:+" + d.phone;
 
-      var msg = "¡Hola! 🐾 Escaneé la placa de " + d.petName + " y quiero ayudar. ¿Cómo puedo hacer para que vuelva contigo?";
+      var msg = perdida
+        ? "¡Hola! 🐾 Escaneé la placa de " + d.petName + " y vi que están buscando a su mascota. Quiero ayudar. ¿Cómo podemos coordinar para que vuelva contigo?"
+        : "¡Hola! 🐾 Escaneé la placa de " + d.petName + " y quiero ayudar. ¿Cómo podemos hacer para que vuelva contigo?";
       document.getElementById("waBtn").href =
         "https://wa.me/" + d.phone + "?text=" + encodeURIComponent(msg);
 
