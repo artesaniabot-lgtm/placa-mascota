@@ -25,6 +25,7 @@
     .btn-rojo { background: #d9534f; }
     .btn-verde { background: #25a244; }
     .btn-azul { background: #0275d8; margin-top: 10px; }
+    .btn-link { display: block; text-align: center; text-decoration: none; background: #fff; color: #0275d8; border: 2px solid #0275d8; }
     input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
     .pie { font-size: 12px; color: #888; text-align: center; margin-top: 18px; }
   </style>
@@ -49,7 +50,7 @@
         <button id="btnTel" class="btn btn-azul">Guardar tel&eacute;fono</button>
       </section>
 
-            <section>
+      <section>
         <h3>&iquest;Otro dato est&aacute; incorrecto?</h3>
         <p class="ayuda">Nombre, raza, sexo, edad, observaciones o correo. Env&iacute;a una solicitud y la revisaremos. Necesitar&aacute;s escribir el correo con el que registraste la placa.</p>
         <a id="btnCorreccion" class="btn btn-link" href="#" target="_blank" rel="noopener">&#9999;&#65039; Corregir un dato</a>
@@ -61,6 +62,11 @@
 
   <script>
     var API_URL = "https://script.google.com/macros/s/AKfycby95R7QhQqbWJ8iPe7AzeeA_PrP6LWeLLqD9ZI773IvxPe782JfV0tIhCBQb9wOiz8n/exec";
+
+    // Formulario de corrección
+    var FORM_CORRECCION = "https://docs.google.com/forms/d/e/1FAIpQLSfWoVwmUPm4JnyqiZVn3TRdIyYyMaS4HWJAZcQWCLiK0iZIvg/viewform?usp=pp_url";
+    var ENTRY_ID = "entry.1893199277";
+    var ENTRY_NOMBRE = "entry.886802960";
 
     var params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     var id = params.get("id");
@@ -90,6 +96,12 @@
       ocupado = b;
       btnEstado.disabled = b;
       btnTel.disabled = b;
+    }
+
+    function enlaceCorreccion(nombre) {
+      return FORM_CORRECCION +
+        "&" + ENTRY_ID + "=" + encodeURIComponent(id) +
+        "&" + ENTRY_NOMBRE + "=" + encodeURIComponent(nombre);
     }
 
     function pintar(d) {
@@ -189,4 +201,3 @@
   </script>
 </body>
 </html>
-<!-- actualizado -->
