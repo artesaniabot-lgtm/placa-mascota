@@ -48,6 +48,12 @@
         <input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+56 9 1234 5678">
         <button id="btnTel" class="btn btn-azul">Guardar tel&eacute;fono</button>
       </section>
+
+            <section>
+        <h3>&iquest;Otro dato est&aacute; incorrecto?</h3>
+        <p class="ayuda">Nombre, raza, sexo, edad, observaciones o correo. Env&iacute;a una solicitud y la revisaremos. Necesitar&aacute;s escribir el correo con el que registraste la placa.</p>
+        <a id="btnCorreccion" class="btn btn-link" href="#" target="_blank" rel="noopener">&#9999;&#65039; Corregir un dato</a>
+      </section>
     </div>
 
     <p class="pie">Este enlace es personal. No lo compartas con nadie.</p>
@@ -105,6 +111,7 @@
         : "\uD83D\uDEA8 Marcar como perdida";
 
       inputTel.value = d.telefonoVisible || "";
+      document.getElementById("btnCorreccion").href = enlaceCorreccion(d.petName);
       panel.style.display = "block";
     }
 
